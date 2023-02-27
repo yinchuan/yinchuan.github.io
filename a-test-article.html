@@ -6,7 +6,7 @@
         <meta name="generator" content="Pelican" />
         <title>A test article</title>
         <link rel="stylesheet" href="/theme/css/main.css" />
-        <meta name="description" content="This is a test article. Try out a process: edit in master branch review at local, pelican -r -l commit && push to master ghp-import output -b..." />
+        <meta name="description" content="This is a test article. Try out a process: edit in master branch review at local, pelican -r -l commit git post-commit hook will 1. push to master..." />
 </head>
 
 <body id="index" class="home">
@@ -40,8 +40,8 @@
 <ol>
 <li>edit in master branch</li>
 <li>review at local, pelican -r -l</li>
-<li>commit &amp;&amp; push to master</li>
-<li><code>ghp-import output -b gh-pages</code>, then <code>git push github gh-pages</code></li>
+<li>commit</li>
+<li>git post-commit hook will 1. push to master 2. run ghp-import and push ghp-pages to github</li>
 </ol>
     </div><!-- /.entry-content -->
 
