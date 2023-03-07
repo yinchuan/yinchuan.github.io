@@ -19,7 +19,54 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/why-you-cannot-communicate-through-quantum-entaglement-what-you-can-possiblely-do.html">Why you cannot communicate through quantum entaglement? What you can possiblely do.</a></h1>
+                    <h1 class="entry-title"><a href="/configure-clion-with-ros.html">Configure-CLion-with-ROS</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2023-03-07T21:42:00+11:00">
+                Published: Tue 07 March 2023
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="/author/yinchuan.html">yinchuan</a>
+        </address>
+<p>In <a href="/category/computing.html">Computing</a>.</p>
+
+</footer><!-- /.post-info --><p>I'm following the ROS Tutorial: <a href="http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29">Writing a Simple Publisher and Subscriber (C++)</a>. I've finished the tutorials before this one so I've finished setting up dependencies for message and service. I'm going to use CLion for C++ developing. Following the <a href="https://www.jetbrains.com/help/clion/ros-setup-tutorial.html#open-ros-prj">official documentation</a> and a little tweaking, I managed to configure CLion with ROS.</p>
+<p>The results:</p>
+<ul>
+<li>developing ROS node in CLion</li>
+<li>debugging a node as normal C++ application</li>
+<li>don't clash with <code>catkin_make</code></li>
+</ul>
+<p>Steps:</p>
+<ol>
+<li>Lauch CLion in a sourced environment. As the offcial documentation said, the easiest way is to run CLion in a sourced shell.</li>
+<li>open <code>&lt;WORKSPACE_DIRECTORY&gt;/src</code> as a project in CLion.</li>
+<li>
+<p>Change settings in <code>Build, Execution, Deployment|CMake</code></p>
+<ol>
+<li>In Build Directory, choose: <code>&lt;WORKSPACE_DIRECTORY&gt;/build</code></li>
+<li>In CMake options, add: <code>-DCATKIN_DEVEL_PREFIX:PATH=&lt;WORKSPACE_DIRECTORY&gt;/devel</code></li>
+<li>(Optional) In Generator, choose: <code>Unix Makefiles</code>. This is what catkin_make uses while CLion(2022.2) uses Ninja by default. If you don't change this, you need to delete <code>&lt;WORKSPACE_DIRECTORY&gt;/build</code> before using <code>catkin_make</code>.</li>
+<li>in <code>&lt;PACKAGE&gt;/CMakeLists.txt</code>, uncommentting this line to use c++11 otherwise the code in the tutorial won't be built.</li>
+</ol>
+<blockquote>
+<p>add_compile_options(-std=c++11)</p>
+</blockquote>
+</li>
+</ol>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/why-you-cannot-communicate-through-quantum-entaglement-what-you-can-possiblely-do.html" rel="bookmark"
+                           title="Permalink to Why you cannot communicate through quantum entaglement? What you can possiblely do.">Why you cannot communicate through quantum entaglement? What you can possiblely do.</a></h1>
+                </header>
+
+                <div class="entry-content">
 <footer class="post-info">
         <abbr class="published" title="2023-03-03T09:20:00+11:00">
                 Published: Fri 03 March 2023
@@ -30,22 +77,11 @@
         </address>
 <p>In <a href="/category/computing.html">Computing</a>.</p>
 
-</footer><!-- /.post-info --><p>This is a note when watching <a href="https://www.youtube.com/watch?v=F_Riqjdh2oM&amp;ab_channel=MicrosoftResearch">Quantum Computing for Computer Scientists</a>. Please not it could be wrong.</p>
-<p>A qubit, when measured, collapses to state 1 or 0 following a probablistic distribution. An entangled pair of qubits has a property of when one is measured and collapses to 1 or 0, the other collapses to 0 or 1 respectively. This happens instantaously no matter how far the two qubits apart so it's faster than the speed of light.</p>
-<p>Is there a way to utilize this property to communicate faster than ligth speed? The answer is no. Here the communication is defined as a sender to transmit some information to a receiver. The content being transmitted can't be random so the sender must have a way to manipulate the pair of qubits such that the receiver get the intended content. It's obvious that the sender has no control of what state a qubit will collapse to since it's purely probablistic.</p>
-<p>The property could be used for key distribution. The result of key distribution is that the sender and receiver share a key which is secret to a third party. The key can be used for encryption in subsequent communication. A simple protocol could be:</p>
-<ol>
-<li>Alice and Bob eash has half of an entangled pair of qubits. Let's say they have enough number of those.</li>
-<li>Alice and Bob negotiate the qubits to be used in this session. Let's say they agree to use qubit0 to qubit255.</li>
-<li>Alice measures its qubits and gets result KEY which is a 256bits binary string.</li>
-<li>Bob measures its qubits and get result KEY'. According to quantum entanglement, KEY' is the inverse of KEY. Bob inverses KEY' to get KEY.</li>
-<li>Now Alice and Bob shares the same key.</li>
-</ol>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+</footer><!-- /.post-info -->                <p>This is a note when watching <a href="https://www.youtube.com/watch?v=F_Riqjdh2oM&amp;ab_channel=MicrosoftResearch">Quantum Computing for Computer Scientists</a>. Please not it could be wrong.</p>
+<p>A qubit, when measured, collapses to state 1 or 0 following a probablistic distribution. An entangled pair of qubits has a property of when one is measured and collapses to 1 or 0 …</p>
+                <a class="readmore" href="/why-you-cannot-communicate-through-quantum-entaglement-what-you-can-possiblely-do.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>
