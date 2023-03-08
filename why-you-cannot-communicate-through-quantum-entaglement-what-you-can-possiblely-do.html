@@ -37,14 +37,14 @@
 <p>In <a href="/category/computing.html">Computing</a>.</p>
 
 </footer><!-- /.post-info -->      <p>This is a note when watching <a href="https://www.youtube.com/watch?v=F_Riqjdh2oM&amp;ab_channel=MicrosoftResearch">Quantum Computing for Computer Scientists</a>. Please not it could be wrong.</p>
-<p>A qubit, when measured, collapses to state 1 or 0 following a probablistic distribution. An entangled pair of qubits has a property of when one is measured and collapses to 1 or 0, the other collapses to 0 or 1 respectively. This happens instantaously no matter how far the two qubits apart so it's faster than the speed of light.</p>
+<p>A qubit, when measured, collapses to state 1 or 0 following a probablistic distribution. An entangled pair of qubits has a property of any one is measure collapes the other. This happens instantaously no matter how far the two qubits apart so it's faster than the speed of light.</p>
 <p>Is there a way to utilize this property to communicate faster than ligth speed? The answer is no. Here the communication is defined as a sender to transmit some information to a receiver. The content being transmitted can't be random so the sender must have a way to manipulate the pair of qubits such that the receiver get the intended content. It's obvious that the sender has no control of what state a qubit will collapse to since it's purely probablistic.</p>
 <p>The property could be used for key distribution. The result of key distribution is that the sender and receiver share a key which is secret to a third party. The key can be used for encryption in subsequent communication. A simple protocol could be:</p>
 <ol>
 <li>Alice and Bob eash has half of an entangled pair of qubits. Let's say they have enough number of those.</li>
 <li>Alice and Bob negotiate the qubits to be used in this session. Let's say they agree to use qubit0 to qubit255.</li>
 <li>Alice measures its qubits and gets result KEY which is a 256bits binary string.</li>
-<li>Bob measures its qubits and get result KEY'. According to quantum entanglement, KEY' is the inverse of KEY. Bob inverses KEY' to get KEY.</li>
+<li>Bob measures its qubits and get result KEY'. The qubits pairs can be manipulate such the relationship between KEY and KEY' is determined, for example both collaps to 0 or 1. Bob calculates KEY from KEY'.</li>
 <li>Now Alice and Bob shares the same key.</li>
 </ol>
     </div><!-- /.entry-content -->
