@@ -4,9 +4,9 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="generator" content="Pelican" />
-        <title>Configure-CLion-with-ROS</title>
+        <title>use Caps-Lock as Ctrl on Ubuntu 22.04</title>
         <link rel="stylesheet" href="/theme/css/main.css" />
-        <meta name="description" content="I'm following the ROS Tutorial: Writing a Simple Publisher and Subscriber (C++). I've finished the tutorials before this one so I've finished..." />
+        <meta name="description" content="why? Ctrl is used very often in terminal so it's useful to have it closer. The benefit of using Caps-Lock as Ctrl is that the hand doesn't need to..." />
 </head>
 
 <body id="index" class="home">
@@ -20,14 +20,14 @@
   <article>
     <header>
       <h1 class="entry-title">
-        <a href="/configure-clion-with-ros.html" rel="bookmark"
-           title="Permalink to Configure-CLion-with-ROS">Configure-CLion-with-ROS</a></h1>
+        <a href="/use-caps-lock-as-ctrl-on-ubuntu-2204.html" rel="bookmark"
+           title="Permalink to use Caps-Lock as Ctrl on Ubuntu 22.04">use Caps-Lock as Ctrl on Ubuntu 22.04</a></h1>
     </header>
 
     <div class="entry-content">
 <footer class="post-info">
-        <abbr class="published" title="2023-03-07T21:42:00+11:00">
-                Published: Tue 07 March 2023
+        <abbr class="published" title="2023-04-26T20:06:00+10:00">
+                Published: Wed 26 April 2023
         </abbr>
 
         <address class="vcard author">
@@ -35,30 +35,17 @@
         </address>
 <p>In <a href="/category/computing.html">Computing</a>.</p>
 
-</footer><!-- /.post-info -->      <p>I'm following the ROS Tutorial: <a href="http://wiki.ros.org/ROS/Tutorials/WritingPublisherSubscriber%28c%2B%2B%29">Writing a Simple Publisher and Subscriber (C++)</a>. I've finished the tutorials before this one so I've finished setting up dependencies for message and service. I'm going to use CLion for C++ developing. Following the <a href="https://www.jetbrains.com/help/clion/ros-setup-tutorial.html#open-ros-prj">official documentation</a> and a little tweaking, I managed to configure CLion with ROS.</p>
-<p>The results:</p>
-<ul>
-<li>developing ROS node in CLion</li>
-<li>debugging a node as normal C++ application</li>
-<li>don't clash with <code>catkin_make</code></li>
-</ul>
-<p>Steps:</p>
+</footer><!-- /.post-info -->      <h2>why?</h2>
+<p><code>Ctrl</code> is used very often in terminal so it's useful to have it closer. The benefit of using Caps-Lock as Ctrl is that the hand doesn't need to move a lot to reach it. The downside is Caps-Lock becomes further but it's rarely used so it's acceptable.</p>
+<h2>how?</h2>
+<p>After tried a few ways, I found <a href="https://askubuntu.com/a/418773">this solution</a> works for me.</p>
 <ol>
-<li>Lauch CLion in a sourced environment. As the offcial documentation said, the easiest way is to run CLion in a sourced shell.</li>
-<li>open <code>&lt;WORKSPACE_DIRECTORY&gt;/src</code> as a project in CLion.</li>
-<li>
-<p>Change settings in <code>Build, Execution, Deployment|CMake</code></p>
-<ol>
-<li>In Build Directory, choose: <code>&lt;WORKSPACE_DIRECTORY&gt;/build</code></li>
-<li>In CMake options, add: <code>-DCATKIN_DEVEL_PREFIX:PATH=&lt;WORKSPACE_DIRECTORY&gt;/devel</code></li>
-<li>(Optional) In Generator, choose: <code>Unix Makefiles</code>. This is what catkin_make uses while CLion(2022.2) uses Ninja by default. If you don't change this, you need to delete <code>&lt;WORKSPACE_DIRECTORY&gt;/build</code> before using <code>catkin_make</code>.</li>
-<li>in <code>&lt;PACKAGE&gt;/CMakeLists.txt</code>, uncommentting this line to use c++11 otherwise the code in the tutorial won't be built.</li>
+<li>edit file <code>/etc/default/keyboard</code>, add <code>ctrl:swapcaps</code> to <code>XKBOPTIONS=""</code>, so it looks like <code>XKBOPTIONS="ctrl:swapcaps"</code>.</li>
+<li>run command <code>sudo dpkg-reconfigure keyboard-configuration</code>. choose keep the configuration in file when asked.</li>
+<li>reboot.</li>
 </ol>
-<blockquote>
-<p>add_compile_options(-std=c++11)</p>
-</blockquote>
-</li>
-</ol>
+<h2>any other <code>XKBOPTIONS</code> available?</h2>
+<p>yes, I found a list of options and their meaning in <a href="https://github.com/sulmone/X11/blob/master/share/X11/xkb/rules/xorg.lst">xorg.lst</a>.</p>
     </div><!-- /.entry-content -->
 
   </article>
