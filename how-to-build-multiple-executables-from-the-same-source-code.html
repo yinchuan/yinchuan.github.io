@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="generator" content="Pelican" />
+        <title>How To Build Multiple Executables From The Same Source Code</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+        <meta name="description" content="The trick is to use macro in source code and pass the macro definition during compiling. Macros is a good tutorial from codecademy about macros...." />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">Yinchuan's blog</a></h1>
+                <nav><ul>
+                    <li class="active"><a href="/category/computing.html">Computing</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/how-to-build-multiple-executables-from-the-same-source-code.html" rel="bookmark"
+           title="Permalink to How To Build Multiple Executables From The Same Source Code">How To Build Multiple Executables From The Same Source Code</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2023-05-09T20:12:00+10:00">
+                Published: Tue 09 May 2023
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="/author/yinchuan.html">yinchuan</a>
+        </address>
+<p>In <a href="/category/computing.html">Computing</a>.</p>
+
+</footer><!-- /.post-info -->      <p>The trick is to use macro in source code and pass the macro definition during compiling. <a href="https://www.codecademy.com/resources/docs/cpp/macros">Macros</a> is a good tutorial from codecademy about macros.</p>
+<h2>1. use a macro in source code</h2>
+<p>In this sample code, <code>NAME</code> is a macro and not defined in this file.</p>
+<div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
+
+<span class="kr">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Hello &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">NAME</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<h2>2. pass in macro definition using <code>-D</code> flag of <code>g++</code></h2>
+<p>This command use <code>-D</code> flag to define <code>NAME</code> as a string <code>"World"</code> which will replace literally <code>NAME</code> in source code.</p>
+<div class="highlight"><pre><span></span><code>g++ -D NAME=&#39;&quot;World&quot;&#39; main.cpp
+</code></pre></div>
+
+<p>To build another executable, just pass in a different definition, for example:</p>
+<div class="highlight"><pre><span></span><code>g++ -D NAME=&#39;&quot;Pelican&quot;&#39; main.cpp
+</code></pre></div>
+
+<p>Of couse, the task in this example can also be done by passing command line argument to executable. In some other situations, using macros are a better solution.</p>
+<h2>3. pass in macro in <code>CMake</code></h2>
+<div class="highlight"><pre><span></span><code>add_executable(main src/main.cpp)
+target_compile_definitions(main PRIVATE NAME=&quot;World&quot;)
+</code></pre></div>
+
+<h2>4. see output of preprocessor for debugging macro replacement</h2>
+<p>Macro replacement could be triky to debug at first. <code>-E</code> flag output the result of preprocessor to stdout, so it's easy to see the result of macro replacement. In this example, the <code>"World"</code> is not esapced by single quotes which results in invalid code.</p>
+<div class="highlight"><pre><span></span><code>g++ -E -D NAME=&quot;World&quot; main.cpp
+</code></pre></div>
+
+<p>It's easy to spot the error in the output below.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">//...</span>
+<span class="c1">//ignore some output</span>
+<span class="c1">//...</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Hello &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">World</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="https://getpelican.com/">Pelican</a></li>
+                            <li><a href="https://www.python.org/">Python.org</a></li>
+                            <li><a href="https://palletsprojects.com/p/jinja/">Jinja2</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="https://linkedin.com/in/yin-chris">LinkedIn</a></li>
+                            <li><a href="https://github.com/yinchuan">GitHub</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="https://getpelican.com/">Pelican</a>, which takes great advantage of <a href="https://www.python.org/">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="https://www.smashingmagazine.com/2009/08/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

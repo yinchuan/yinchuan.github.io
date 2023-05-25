@@ -4,25 +4,44 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="generator" content="Pelican" />
-        <title>Yinchuan's blog - Authors</title>
+        <title>Run Roslaunch In Currenty Directory</title>
         <link rel="stylesheet" href="/theme/css/main.css" />
+        <meta name="description" content="By default, node processes started by roslaunch are running in ~/.ros/. To see the current running directory of a process, use command pwdx <pid>...." />
 </head>
 
 <body id="index" class="home">
         <header id="banner" class="body">
                 <h1><a href="/">Yinchuan's blog</a></h1>
                 <nav><ul>
-                    <li><a href="/category/computing.html">Computing</a></li>
+                    <li class="active"><a href="/category/computing.html">Computing</a></li>
                 </ul></nav>
         </header><!-- /#banner -->
-
 <section id="content" class="body">
-    <h1>Authors on Yinchuan's blog</h1>
-    <ul>
-        <li><a href="/author/yinchuan.html">yinchuan</a> (6)</li>
-    </ul>
-</section>
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/run-roslaunch-in-currenty-directory.html" rel="bookmark"
+           title="Permalink to Run Roslaunch In Currenty Directory">Run Roslaunch In Currenty Directory</a></h1>
+    </header>
 
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2023-05-04T20:04:00+10:00">
+                Published: Thu 04 May 2023
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="/author/yinchuan.html">yinchuan</a>
+        </address>
+<p>In <a href="/category/computing.html">Computing</a>.</p>
+
+</footer><!-- /.post-info -->      <p>By default, node processes started by <code>roslaunch</code> are running in <code>~/.ros/</code>. To see the current running directory of a process, use command <code>pwdx &lt;pid&gt;</code>.</p>
+<p>It's sometimes useful to start the process in current directory. It can be done by setting ROS_HOME environment: <code>ROS_HOME=. roslauch &lt;pkg&gt; &lt;launch_file&gt;</code>. This command sets the running directory to current directory.</p>
+<p>If you want to set the running directory to where the executable is, you can set attribute <code>cwd=node</code> in launch file. See <a href="http://wiki.ros.org/roslaunch/XML/node">documentation of &lt;node&gt; tag</a>.</p>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
         <section id="extras" class="body">
                 <div class="blogroll">
                         <h2>links</h2>
