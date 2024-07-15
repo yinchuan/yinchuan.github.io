@@ -18,7 +18,147 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/how-to-build-multiple-executables-from-the-same-source-code.html">How To Build Multiple Executables From The Same Source Code</a></h1>
+                    <h1 class="entry-title"><a href="/start-a-saved-game-without-menu-in-sangokushi-sosodenmd.html">Start A Saved Game Without Menu In Sangokushi Sōsōden.md</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2024-07-15T08:21:00+10:00">
+                Published: Mon 15 July 2024
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="/author/yinchuan.html">yinchuan</a>
+        </address>
+<p>In <a href="/category/computing.html">Computing</a>.</p>
+
+</footer><!-- /.post-info --><p><a href="https://en.wikipedia.org/wiki/Sangokushi_S%C5%8Ds%C5%8Dden">Sangokushi Sōsōden</a> is a strategic role-playing game (RPG). Like many games, the player needs to go through menus and dialogs to resume a saved game. In Sangokushi Sōsōden, there are three menus/dialogs to resume a saved game as shown in the screenshots:</p>
+<ol>
+<li>Main Menu</li>
+<li>Saved Game List</li>
+<li>Confirmation Dialog</li>
+</ol>
+<p align="center">
+    <img src="img/Pasted image 20240712170008.png" alt="Main Menu" width="350"/>
+    <img src="img/Pasted image 20240712170044.png" alt="Saved Game List and Conformation Dialog" width="350"/>
+</p>
+
+<p>I'm trying to find a way to bypass all those just for fun. I'm going to explain how each menu/dialog is bypassed and briefly describe the experience with working with ChatGPT in this project.</p>
+<h2>1. the Main Menu</h2>
+<p>I started with finding out where and how the menu is used in the code. The Main Menu is actually a dialog which is usually displayed by <a href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxparama">DialogBoxParamA</a> which receives a dialog template parameter. We can search the API call and find the one which has the template name of the Main Menu as input.</p>
+<p>I used Visual Studio to get the template name, though, other tools that can explore resources of a PE file will do. Open the executable of the game in Visual Studio and select the Dialog node, after checking each dialog resource, I identified the name of the Main Menu is <code>193</code>(as shown in the screenshot below). </p>
+<p align="center">
+    <img src="img/Pasted image 20240711203054.png" alt="Resource of Main Menu in Visual Studio" height="180"/>
+</p>
+
+<p>I then used <a href="https://hex-rays.com/ida-free/">IDA Free</a>, a reverse engineering tool, to find all references to <code>DialogBoxparamA</code>. I was lucky that there aren't many of them. I found the call at address <code>0x0041BFCF</code>. I noticed that the return value of the call is not used. Instead, a <code>switch</code> statement uses a value at memory address <code>0x49773C</code> to jump to one of four cases. I then set breakpoints for each case and debugged the game in IDA Free. I found that each case of the <code>switch</code> corresponds to a different item in the Main Menu and that the value at address <code>0x49773C</code> is the index of the clicked item. The index starts from 0, so the second item (Load Saved) has index <code>1</code>.</p>
+<p align="center">
+    <img src="img/Pasted image 20240711203719.png" alt="assembly code to diaplay Main Menu" height="200"/>
+</p>
+
+<p>To not display the Main Menu, I can safely replace the call with a call to my own function since <code>DialogBoxParamA</code> is provided by the system and has no game specific logic at all. The function simply writes the value <code>1</code>  to the address <code>0x49773C</code> and clears rubbish data on the frame stack. The function is declared to be <a href="https://learn.microsoft.com/en-us/cpp/c-language/naked-functions?view=msvc-170">naked</a> so the compiler will not set up a prologue and epilogue. The benefit of using a naked function is that it has full access to the original frame stack. </p>
+<p>The code of the function is shown below. It first writes the value <code>1</code> to memory. It pops the top of the stack to a global variable <code>return_address</code>, so it knows where to return to. It then clears the five arguments of <code>DialogBoxParamA</code> , a total of 20 bytes, from the stack. The reason for the clearing is to follow the <code>stdcall</code> calling convention. In this calling convention, the arguments are pushed onto the stack before calling <code>DialogPramaA</code> which will clear them before returning. Since <code>DialogBoxPramaA</code> is not going to be called, our code needs to do the cleanup. At last, it pushes <code>return_address</code> to the stack and returns.</p>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="nf">__declspec</span><span class="p">(</span><span class="kr">naked</span><span class="p">)</span><span class="w"> </span><span class="n">bypassMainMenu</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">    </span><span class="o">*</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="mh">0x049773C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kr">__asm</span><span class="w"> </span><span class="p">{</span><span class="w">  </span>
+<span class="w">            </span><span class="n">pop</span><span class="w"> </span><span class="n">return_address</span>
+<span class="w">            </span><span class="n">add</span><span class="w"> </span><span class="n">esp</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="w"> </span><span class="c1">// clear arguments to ds:DialogBoxParamA    </span>
+<span class="w">            </span><span class="n">push</span><span class="w"> </span><span class="n">return_address</span><span class="w">  </span>
+<span class="w">            </span><span class="n">ret</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>I realised after finishing this project that I could use a function with <code>stdcall</code> calling convention instead of a "<code>naked</code> function". The five unused parameters is to ensure correct stack cleanup. The compiler generates code to clear 20 bytes on the stack, just as what we did in the "<code>naked</code> function".</p>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="w"> </span><span class="kr">__stdcall</span><span class="w"> </span><span class="n">bypassMainMenu</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">  </span>
+<span class="w">    </span><span class="o">*</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="mh">0x049773C</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">  </span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>The generated assembly code is listed below.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">push</span><span class="w">    </span><span class="nt">ebp</span>
+<span class="nt">mov</span><span class="w">     </span><span class="nt">ebp</span><span class="o">,</span><span class="w"> </span><span class="nt">esp</span>
+<span class="nt">mov</span><span class="w">     </span><span class="nt">dword</span><span class="w"> </span><span class="nt">ptr</span><span class="w"> </span><span class="nt">ds</span><span class="p">:</span><span class="nd">49773Ch</span><span class="o">,</span><span class="w"> </span><span class="nt">1</span>
+<span class="nt">pop</span><span class="w">     </span><span class="nt">ebp</span>
+<span class="nt">retn</span><span class="w">    </span><span class="nt">14h</span><span class="w"> </span><span class="o">;</span><span class="w"> </span><span class="nt">14h</span><span class="w"> </span><span class="nt">means</span><span class="w"> </span><span class="nt">hex</span><span class="o">,</span><span class="w"> </span><span class="nt">it</span><span class="err">&#39;</span><span class="nt">s</span><span class="w"> </span><span class="nt">20</span><span class="w"> </span><span class="nt">in</span><span class="w"> </span><span class="nt">decimal</span>
+</code></pre></div>
+
+<p>In this way, the game continues the same as clicking the "Load Saved Game" in the Main Menu.</p>
+<h2>2. the Saved Game List</h2>
+<p>I identified that the Saved Game List is used at multiple places by searching reference to <code>DialogBoxParamA</code> in IDA Free. Also, I discovered that the Saved Game List is an event-driven dialog which means a <a href="https://learn.microsoft.com/en-us/windows/win32/api/winuser/nc-winuser-dlgproc">DLGPROC</a> callback function runs in a message loop and responds accordingly to the messages sent to it by the operating system. The callback function loads the selected saved game and resumes the game from there so I can not simply bypass it as we did for the Main Menu. I decided to simulate mouse clicking events by sending messages to the Saved Game List dialog so I don't have to dive deep in the assembly code.</p>
+<p>The <code>PostMessage</code> API can send a message to target window. It needs the handle (an identifier) of the target,  the message type, and message specific information.</p>
+<p>I used <a href="https://learn.microsoft.com/en-us/visualstudio/debugger/introducing-spy-increment?view=vs-2022">Spy++</a> to inspect the window hierarchy.  It is a three layers structure <code>Desktop</code> - <code>读取进度</code> - <code>List1</code>. The <code>List1</code> window is the target. I used the API <code>FindWindowEx</code> twice to get the handle of <code>List1</code>.  <code>FindWindowEx</code> returns the handle of a direct child window whose class and title match the passed in parameters. I also used <code>Spy++</code> to obtain these parameters. </p>
+<p align="center">
+    <img src="img/Pasted image 20240713145809.png" alt="window property in Spy++" height="80" style="border: solid 1px black">
+</p>
+
+<p>Without error checking, the code is:</p>
+<div class="highlight"><pre><span></span><code><span class="n">HWND</span><span class="w"> </span><span class="n">hDialog</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="n">hList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span><span class="w">  </span>
+<span class="n">hDialog</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FindWindowEx</span><span class="p">(</span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;#32770&quot;</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">);</span><span class="w"> </span><span class="c1">// handle of the second layer</span>
+<span class="n">hList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FindWindowEx</span><span class="p">(</span><span class="n">hDialog</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;SysListView32&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;List1&quot;</span><span class="p">);</span><span class="w"> </span><span class="c1">// List1 is a child of hDialog</span>
+<span class="n">SetForegroundWindow</span><span class="p">(</span><span class="n">hList</span><span class="p">);</span>
+</code></pre></div>
+
+<p>Note: I used <code>nullptr</code> as window title when obtain <code>hDialog</code> because the title of that window is in Chinese and I'm having trouble to use wide char with <code>FindWindEx</code>. </p>
+<p>Also in <code>Spy++</code>, I saw four messages(excluding <code>WM_MOUSEMOVE</code>) were sent to the <code>List1</code>. </p>
+<p align="center">
+    <img src="img/Pasted image 20240712175608.png" alt="messages sent to window List1" width="100%" style="border: solid 1px black">
+</p>
+<p>After some experiments, I managed to simulate a mouse click event by first moving the mouse cursor onto the second menu item, and then sending a <code>WM_LBUTTONUP</code> message.</p>
+<div class="highlight"><pre><span></span><code><span class="n">POINT</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="mi">20</span><span class="p">};</span><span class="w"> </span><span class="c1">// the coordinates of a point at the second item, related to List1 window</span>
+<span class="n">ClientToScreen</span><span class="p">(</span><span class="n">hList</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">p</span><span class="p">);</span><span class="w"> </span><span class="c1">// convert to global coordinates</span>
+<span class="n">SetCursorPos</span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">);</span><span class="w"> </span><span class="c1">// move mouse</span>
+<span class="n">PostMessage</span><span class="p">(</span><span class="n">hList</span><span class="p">,</span><span class="w"> </span><span class="n">WM_LBUTTONUP</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">MAKELPARAM</span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">));</span>
+</code></pre></div>
+
+<p>In this way, the game loaded a saved game as if a real person clicked it using a mouse.</p>
+<h2>3. the Confirmation  Dialog</h2>
+<p>Instruction at <code>0x41Ad91</code> displayed the Confirmation Dialog and waited for user to respond. It returns value <code>1</code> when a user clicks <code>Yes</code> button and <code>0</code> when <code>No</code> button. I simply put value <code>1</code> to <code>EAX</code> register which is where the return value of a function goes. A good thing is that <code>call</code> and <code>mov eax, 1</code> instructions have the same length so we don't need to deal with overwritten instructions.</p>
+<p align="center">
+    <img src="img/Pasted image 20240712180725.png" alt="check return value of Confirmation Diaglog" width="400" style="border: solid 1px black">
+</p>
+
+<div class="highlight"><pre><span></span><code><span class="c1">// convert instruction to opcode </span>
+<span class="n">BYTE</span><span class="w"> </span><span class="n">patch</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="mh">0xB8</span><span class="p">,</span><span class="w"> </span><span class="mh">0x01</span><span class="p">,</span><span class="w"> </span><span class="mo">00</span><span class="p">,</span><span class="w"> </span><span class="mo">00</span><span class="p">,</span><span class="w"> </span><span class="mo">00</span><span class="p">};</span><span class="w"> </span><span class="c1">// mov eax, 0  </span>
+<span class="n">WriteProcessMemory</span><span class="p">(</span><span class="n">ekd5_handle</span><span class="p">,</span><span class="w"> </span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">void</span><span class="w"> </span><span class="o">*&gt;</span><span class="p">(</span><span class="mh">0x41AD91</span><span class="p">),</span><span class="w"> </span><span class="n">patch</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">);</span>
+</code></pre></div>
+
+<h1>Conclusion</h1>
+<p>I started this project with zero experience in <code>win32</code> desktop application programming.  Although there must be better solutions, I'm happy with the result now. ChatGPT is super helpful when dealing with totally new concepts as this project for me. The upside is that it taught me how to approach the problem when I have no idea where to start. It also provided me with working (sometimes not) examples, allowing me to try things quickly without going through pages and pages of documentations. The downside is that it could provide incorrect answers, so it's important to cross-reference with official documentations.</p>
+<p>Although ChatGPT can answer (almost) any questions, it can only answer what you ask. I think knowing what to ask is a critical ability in the age of ChatGPT. As the saying goes "I don't know what I don't know.", I reckon expanding the area of "I know what I don't know" will be helpful.</p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/debug-libopenshot-in-clion.html" rel="bookmark"
+                           title="Permalink to Debug libopenshot in CLion">Debug libopenshot in CLion</a></h1>
+                </header>
+
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2024-07-07T08:21:00+10:00">
+                Published: Sun 07 July 2024
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="/author/yinchuan.html">yinchuan</a>
+        </address>
+<p>In <a href="/category/computing.html">Computing</a>.</p>
+
+</footer><!-- /.post-info -->                <p><a href="https://www.openshot.org/">OpenShot</a> is a popular open-source video editor. Here to record the CLion setup for debugging an <a href="https://github.com/OpenShot/openshot-qt/issues/5235">issue</a>. The source code of OpenShot is in three repos: openshot-qt, libopenshot, and libopenshot-audio. openshot-qt is the frontend which uses the other two libraries for video and audio processing. The frontend is a Python …</p>
+                <a class="readmore" href="/debug-libopenshot-in-clion.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/how-to-build-multiple-executables-from-the-same-source-code.html" rel="bookmark"
+                           title="Permalink to How To Build Multiple Executables From The Same Source Code">How To Build Multiple Executables From The Same Source Code</a></h1>
+                </header>
+
+                <div class="entry-content">
 <footer class="post-info">
         <abbr class="published" title="2023-05-09T20:12:00+10:00">
                 Published: Tue 09 May 2023
@@ -29,51 +169,15 @@
         </address>
 <p>In <a href="/category/computing.html">Computing</a>.</p>
 
-</footer><!-- /.post-info --><p>The trick is to use macro in source code and pass the macro definition during compiling. <a href="https://www.codecademy.com/resources/docs/cpp/macros">Macros</a> is a good tutorial from codecademy about macros.</p>
+</footer><!-- /.post-info -->                <p>The trick is to use macro in source code and pass the macro definition during compiling. <a href="https://www.codecademy.com/resources/docs/cpp/macros">Macros</a> is a good tutorial from codecademy about macros.</p>
 <h2>1. use a macro in source code</h2>
 <p>In this sample code, <code>NAME</code> is a macro and not defined in this file.</p>
 <div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iostream&gt;</span>
 
-<span class="kr">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Hello &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">NAME</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div>
-
-<h2>2. pass in macro definition using <code>-D</code> flag of <code>g++</code></h2>
-<p>This command use <code>-D</code> flag to define <code>NAME</code> as a string <code>"World"</code> which will replace literally <code>NAME</code> in source code.</p>
-<div class="highlight"><pre><span></span><code>g++ -D NAME=&#39;&quot;World&quot;&#39; main.cpp
-</code></pre></div>
-
-<p>To build another executable, just pass in a different definition, for example:</p>
-<div class="highlight"><pre><span></span><code>g++ -D NAME=&#39;&quot;Pelican&quot;&#39; main.cpp
-</code></pre></div>
-
-<p>Of couse, the task in this example can also be done by passing command line argument to executable. In some other situations, using macros are a better solution.</p>
-<h2>3. pass in macro in <code>CMake</code></h2>
-<div class="highlight"><pre><span></span><code>add_executable(main src/main.cpp)
-target_compile_definitions(main PRIVATE NAME=&quot;World&quot;)
-</code></pre></div>
-
-<h2>4. see output of preprocessor for debugging macro replacement</h2>
-<p>Macro replacement could be triky to debug at first. <code>-E</code> flag output the result of preprocessor to stdout, so it's easy to see the result of macro replacement. In this example, the <code>"World"</code> is not esapced by single quotes which results in invalid code.</p>
-<div class="highlight"><pre><span></span><code>g++ -E -D NAME=&quot;World&quot; main.cpp
-</code></pre></div>
-
-<p>It's easy to spot the error in the output below.</p>
-<div class="highlight"><pre><span></span><code><span class="c1">//...</span>
-<span class="c1">//ignore some output</span>
-<span class="c1">//...</span>
-<span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Hello &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">World</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-<span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
+<span class="kr">int</span><span class="w"> </span><span class="nf">main …</span></code></pre></div>
+                <a class="readmore" href="/how-to-build-multiple-executables-from-the-same-source-code.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>

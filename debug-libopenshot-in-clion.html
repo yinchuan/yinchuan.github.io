@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="generator" content="Pelican" />
+        <title>Debug libopenshot in CLion</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+        <meta name="description" content="OpenShot is a popular open-source video editor. Here to record the CLion setup for debugging an issue. The source code of OpenShot is in three..." />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">Yinchuan's blog</a></h1>
+                <nav><ul>
+                    <li class="active"><a href="/category/computing.html">Computing</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/debug-libopenshot-in-clion.html" rel="bookmark"
+           title="Permalink to Debug libopenshot in CLion">Debug libopenshot in CLion</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2024-07-07T08:21:00+10:00">
+                Published: Sun 07 July 2024
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="/author/yinchuan.html">yinchuan</a>
+        </address>
+<p>In <a href="/category/computing.html">Computing</a>.</p>
+
+</footer><!-- /.post-info -->      <p><a href="https://www.openshot.org/">OpenShot</a> is a popular open-source video editor. Here to record the CLion setup for debugging an <a href="https://github.com/OpenShot/openshot-qt/issues/5235">issue</a>. The source code of OpenShot is in three repos: openshot-qt, libopenshot, and libopenshot-audio. openshot-qt is the frontend which uses the other two libraries for video and audio processing. The frontend is a Python program and can be started by:</p>
+<div class="highlight"><pre><span></span><code>python &lt;path-to-repo&gt;/openshot-qt/src/launch.py
+</code></pre></div>
+
+<p>To use the local built version of libopenshot, we need to tell Python where to find it.</p>
+<div class="highlight"><pre><span></span><code>PYTHONPATH=&lt;path-to-repo&gt;/libopenshot/cmake-build-debug/bindings python &lt;path-to-repo&gt;/openshot-qt/src/launch.py
+</code></pre></div>
+
+<p>With this knowledge, we can create a Run/Debug Configuration(see screenshot below) in CLion to debug libopenshot. The Executable is <code>python3</code> instead of <code>&lt;path-to-repo&gt;/openshot-qt/src/launch.py</code>, otherwise debugger will complain wrong binary format. The absolute path of <code>launch.py</code> is passed as an argument to the Executable. The environment variable <code>PYTHONPATH</code> is set to <code>&lt;path-to-repo&gt;/libopenshot/cmake-build-debug/bindings</code>. <code>cmake-build-debug</code> is the default build directory for CMake and is created automatically by <code>CMake</code>.
+<img alt="Debug libopenshot in CLion" src="img/screenshot-CLion-debug-libopenshot.png"></p>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="https://getpelican.com/">Pelican</a></li>
+                            <li><a href="https://www.python.org/">Python.org</a></li>
+                            <li><a href="https://palletsprojects.com/p/jinja/">Jinja2</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+
+                            <li><a href="https://linkedin.com/in/yin-chris">LinkedIn</a></li>
+                            <li><a href="https://github.com/yinchuan">GitHub</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="https://getpelican.com/">Pelican</a>, which takes great advantage of <a href="https://www.python.org/">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="https://www.smashingmagazine.com/2009/08/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>
